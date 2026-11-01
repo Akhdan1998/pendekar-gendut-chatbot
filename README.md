@@ -1,6 +1,12 @@
 # UMKM AI Chatbot — Toko H Haris
 
-Aplikasi Flutter Web satu halaman untuk skripsi, dengan GetX, Dio, Material 3, dan data toko simulasi dari backend FastAPI/Gemini. Desain mengacu pada bagian aplikasi dalam `assets/design/uiux.png`. Tidak ada autentikasi, database, maupun penyimpanan percakapan permanen.
+Aplikasi Flutter Web dengan landing page dan chatbot untuk skripsi, dengan GetX, Dio, Material 3, dan data toko simulasi dari backend FastAPI/Gemini. Desain mengacu pada bagian aplikasi dalam `assets/design/uiux.png`. Tidak ada autentikasi, database, maupun penyimpanan percakapan permanen.
+
+## Landing page dan navigasi
+
+Desain landing page mengikuti `assets/design/uiux_landing_page.png`, dengan tema navy, hero, preview demonstrasi, fitur, teknologi, dan CTA. Route `/` menampilkan landing page, sedangkan `/chat` menampilkan chatbot yang sudah ada. Tautan Fitur dan Teknologi menggulir ke bagian terkait; semua CTA chat membuka `/chat`. Preview statis diberi label demonstrasi dan tidak mengirim permintaan API atau menampilkan harga/stok rekaan. Tautan sosial belum ditampilkan karena URL tujuan belum diberikan.
+
+Router Flutter menggunakan URL tanpa hash melalui `flutter_web_plugins` bawaan SDK. Rewrite SPA Firebase yang ada mendukung refresh langsung `/chat`; server preview lokal juga perlu mengarahkan `/chat` ke `index.html`. Browser Back/Forward mengikuti route. Percakapan tetap bersifat sementara dan sesi baru dibuat ketika route chat dibuka kembali. Layout menyusun kartu secara vertikal pada ruang sempit, dan tombol mendukung keyboard, hover, serta fokus.
 
 ## Identitas pelayan AI
 
@@ -96,8 +102,21 @@ Respons yang diterima harus memiliki `success: true` dan `reply` berupa teks tid
 
 Informasi toko: Senin–Sabtu 08:00–20:00 WIB; Minggu tutup; pembayaran tunai, transfer bank, atau QRIS; tanpa pengantaran. Harga dan stok hanya ditampilkan dari respons backend.
 
-## Status verifikasi lingkungan implementasi
+## Audit pra-produksi (1 November 2026)
 
-Dependency berhasil diambil dari cache dan `flutter analyze` selesai tanpa isu. Sebanyak **30/30 tes** lulus melalui runner langsung, termasuk regresi pergantian sesi cepat, respons panjang, keyboard lanskap, IME, pemulihan pesan gagal, dan percakapan panjang. Render widget desktop, tablet, dan mobile juga diperiksa secara visual. Runner standar `flutter test` terhalang izin membuka socket lokal; pengujian juga dijalankan langsung melalui `flutter_tester` dengan harness sementara tanpa socket. Ini bukan keberhasilan runner standar `flutter test`; jalankan kembali perintah tersebut di luar sandbox.
+`flutter analyze` selesai tanpa isu dan runner standar `flutter test` menghasilkan **54/54 lulus**. Build release berhasil dengan `flutter build web --release --dart-define=API_BASE_URL=https://umkm-chatbot-backend-sgtx.vercel.app`.
 
-`flutter build web --no-pub` berhasil setelah Web SDK tersedia di cache lokal. Font ikon Cupertino disertakan untuk toolbar adaptif. Backend lokal belum dapat dijangkau dari sandbox, sehingga interaksi browser dengan FastAPI/Gemini secara menyeluruh masih perlu diuji di lingkungan yang dapat mengakses backend.
+Perbaikan frontend hasil audit:
+
+- Pesan dirender secara lazy dalam urutan kronologis. Jawaban yang datang tidak lagi menggeser posisi baca; mengikuti pesan terbaru dan penyesuaian saat keyboard muncul tetap diuji.
+- Header/composer menggunakan layout ringkas berdasarkan ruang dan skala teks, termasuk 320×568, teks 200%, serta inset keyboard 260 piksel.
+- Fokus composer dipulihkan setelah frame yang mengaktifkan input kembali. Penyelesaian jawaban diumumkan melalui live region di luar daftar lazy, termasuk ketika pengguna membaca pesan lama.
+- Firebase Hosting menggunakan `Cache-Control: no-cache` agar berkas release bernama tetap divalidasi ulang, serta `X-Content-Type-Options: nosniff` dan `Referrer-Policy: strict-origin-when-cross-origin`. Header dan rewrite `/` serta `/chat` diverifikasi melalui Hosting emulator dengan project demo.
+
+Verifikasi mencakup route langsung, CTA, tautan bagian halaman, refresh, Back/Forward, pergantian route cepat, viewport 320–1440 piksel, keyboard/IME, retry, reset sesi, respons panjang, serta rendering lazy. Chrome desktop dan emulasi mobile/tablet diperiksa; aset release yang terdaftar tersedia dan permintaan halaman/aset yang diamati menghasilkan HTTP 200. Bundle release memuat URL API produksi, tanpa log debug API atau URL API lokal. Tidak ditemukan pola kredensial Google/AWS atau private key pada sumber publik dan bundle yang diperiksa.
+
+**Status rilis: ditahan karena layanan API produksi.** Permintaan langsung ke API sempat menghasilkan HTTP 200 dengan kontrak respons valid (7,87 detik total). Namun smoke test dari situs Firebase live menghasilkan HTTP **502 dua kali**, termasuk retry, untuk payload valid `{"message":"Toko buka jam berapa?","history":[]}`. Frontend menampilkan error aman dan kontrol retry/edit. Pemilik backend perlu memeriksa layanan FastAPI/Gemini/Vercel, lalu mengulangi smoke test sebelum rilis disetujui. Backend tidak diubah.
+
+CORS preflight untuk kedua origin produksi (`pendekar-gendut-chatbot.web.app` dan `.firebaseapp.com`) lulus. Origin lokal dan satu origin preview PR representatif ditolak dengan HTTP 400; gunakan origin pengujian yang diizinkan sebelum mengharapkan chat bekerja di preview. Jangan memperluas allowlist tanpa batas.
+
+Chrome mencatat peringatan engine Flutter untuk `Intl.v8BreakIterator` serta atribut id/name input yang dihasilkan engine. Ini bukan exception aplikasi; pantau perbaikan upstream SDK. Workflow CI ditinjau secara statis: versi Flutter dari `.fvmrc`, analyze → test → build → deploy, URL produksi, secret reference, pembatasan PR fork, dan concurrency. Workflow cloud, validitas secret deploy, Safari/Firefox, perangkat fisik, VoiceOver/NVDA langsung, dan load test multi-pengguna belum dijalankan. Tidak ada commit, push, atau deploy selama audit.

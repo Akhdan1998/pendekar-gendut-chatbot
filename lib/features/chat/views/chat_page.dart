@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../controllers/chat_controller.dart';
+import '../models/chat_message.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/chat_composer.dart';
 import '../widgets/chat_error_message.dart';
@@ -23,11 +24,10 @@ class ChatPage extends StatefulWidget {
 class _ChatPageState extends State<ChatPage> {
   late final _controller = widget.controller ?? ChatController();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  final _statusKey = GlobalKey();
 
   @override
   void dispose() {
-    _controller.onClose();
+    if (widget.controller == null) _controller.onClose();
     super.dispose();
   }
 
@@ -58,7 +58,8 @@ class _ChatPageState extends State<ChatPage> {
         final isNarrow = constraints.maxWidth < 760;
         final availableHeight =
             constraints.maxHeight - MediaQuery.viewInsetsOf(context).bottom;
-        final compact = availableHeight < 360;
+        final compact =
+            availableHeight < 360 * MediaQuery.textScalerOf(context).scale(1);
         final outerInset = isNarrow || availableHeight < 600 ? 0.0 : 24.0;
         final sidebarWidth = constraints.maxWidth >= 1200 ? 280.0 : 240.0;
         return Scaffold(
@@ -119,6 +120,17 @@ class _ChatPageState extends State<ChatPage> {
                                       : _conversation(controller),
                                 ),
                               ),
+                              Semantics(
+                                container: true,
+                                liveRegion: true,
+                                label:
+                                    controller.messages.isNotEmpty &&
+                                        controller.messages.last.role ==
+                                            ChatRole.assistant
+                                    ? 'Jawaban baru tersedia dari Pendekar Gendut.'
+                                    : null,
+                                child: const SizedBox(width: 1, height: 1),
+                              ),
                               ChatComposer(
                                 controller: controller,
                                 compact: compact,
@@ -150,64 +162,55 @@ class _ChatPageState extends State<ChatPage> {
     ),
   );
 
-  Widget _conversation(ChatController controller) {
-    final messages = controller.messages;
-    final scroll = controller.scrollController;
-    final statusBox =
-        _statusKey.currentContext?.findRenderObject() as RenderBox?;
-    final statusHeight = statusBox?.hasSize == true
-        ? statusBox!.size.height
-        : null;
-    if (statusHeight != null && scroll.hasClients && scroll.offset > 80) {
-      final position = scroll.position;
-      final conversation = controller.conversation;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted ||
-            conversation != controller.conversation ||
-            !scroll.hasClients ||
-            scroll.position != position ||
-            position.isScrollingNotifier.value) {
-          return;
-        }
-        final newHeight = _statusKey.currentContext?.size?.height;
-        if (newHeight == null || newHeight == statusHeight) return;
-        // Keyed messages retain their anchor; the changing status row does not.
-        position.jumpTo(
-          (position.pixels + statusHeight - newHeight).clamp(
-            position.minScrollExtent,
-            position.maxScrollExtent,
-          ),
-        );
-      });
-    }
-    return Scrollbar(
-      key: ValueKey('conversation-${controller.conversation}'),
-      controller: controller.scrollController,
-      child: NotificationListener<UserScrollNotification>(
-        onNotification: (notification) {
-          if (notification.direction != ScrollDirection.idle) {
-            controller.cancelAutoScroll();
-          }
-          return false;
-        },
-        child: CustomScrollView(
-          controller: controller.scrollController,
-          // The newest message stays anchored when the keyboard resizes the view.
-          reverse: true,
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-              sliver: SliverToBoxAdapter(
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 820),
-                    child: SizedBox(
-                      key: _statusKey,
+  Widget _conversation(ChatController controller) => LayoutBuilder(
+    key: ValueKey('conversation-${controller.conversation}'),
+    builder: (context, constraints) {
+      final scroll = controller.scrollController;
+      final messages = controller.messages;
+      if (scroll.hasClients &&
+          scroll.position.hasViewportDimension &&
+          scroll.position.viewportDimension != constraints.maxHeight &&
+          scroll.position.extentAfter <= 80) {
+        controller.scrollToLatest();
+      }
+      return Scrollbar(
+        controller: scroll,
+        child: NotificationListener<UserScrollNotification>(
+          onNotification: (notification) {
+            if (notification.direction != ScrollDirection.idle) {
+              controller.cancelAutoScroll();
+            }
+            return false;
+          },
+          child: CustomScrollView(
+            controller: scroll,
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => Center(
+                      key: ValueKey(index),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 820),
+                        child: ChatBubble(message: messages[index]),
+                      ),
+                    ),
+                    childCount: messages.length,
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
+                sliver: SliverToBoxAdapter(
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 820),
                       child: controller.isLoading
                           ? const TypingIndicator()
                           : controller.errorMessage != null
                           ? ChatErrorMessage(
-                              message: controller.errorMessage ?? '',
+                              message: controller.errorMessage!,
                               onRetry: () => controller.retry(),
                               onEdit: controller.editFailedMessage,
                             )
@@ -216,36 +219,10 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                 ),
               ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final messageIndex = messages.length - index - 1;
-                    return Center(
-                      key: ValueKey(messageIndex),
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 820),
-                        child: ChatBubble(message: messages[messageIndex]),
-                      ),
-                    );
-                  },
-                  childCount: messages.length,
-                  findChildIndexCallback: (key) {
-                    if (key is ValueKey<int> &&
-                        key.value >= 0 &&
-                        key.value < messages.length) {
-                      return messages.length - key.value - 1;
-                    }
-                    return null;
-                  },
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    );
-  }
+      );
+    },
+  );
 }

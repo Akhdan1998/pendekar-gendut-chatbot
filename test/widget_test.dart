@@ -1,7 +1,9 @@
 import 'package:ai_chatbot/features/chat/controllers/chat_controller.dart';
 import 'package:ai_chatbot/features/chat/widgets/typing_indicator.dart';
 import 'package:ai_chatbot/features/chat/widgets/chat_bubble.dart';
-import 'package:ai_chatbot/main.dart';
+
+import 'support/pump_chat_app.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,7 +30,7 @@ void main() {
         addTearDown(tester.view.resetDevicePixelRatio);
         final api = ControlledApi();
         final controller = ChatController(api: api);
-        await tester.pumpWidget(MyApp(controller: controller));
+        await pumpChatApp(tester, controller: controller);
         await tester.pump(const Duration(seconds: 1));
         expect(
           find.text(
@@ -76,7 +78,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final api = ControlledApi();
       final controller = ChatController(api: api);
-      await tester.pumpWidget(MyApp(controller: controller));
+      await pumpChatApp(tester, controller: controller);
       await tester.pump(const Duration(seconds: 1));
       await tester.tap(find.text('Produk apa saja yang tersedia?'));
       await tester.pump(const Duration(milliseconds: 400));
@@ -112,7 +114,7 @@ void main() {
   testWidgets('Shift Enter inserts newline and Enter submits', (tester) async {
     final api = ControlledApi();
     final controller = ChatController(api: api);
-    await tester.pumpWidget(MyApp(controller: controller));
+    await pumpChatApp(tester, controller: controller);
     await tester.enterText(find.byType(TextField), 'Halo');
     await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.enter);
@@ -137,7 +139,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetViewInsets);
-    await tester.pumpWidget(const MyApp());
+    await pumpChatApp(tester);
     await tester.pump(const Duration(seconds: 1));
     expect(tester.getBottomRight(find.byType(TextField)).dy, lessThan(514));
     expect(tester.takeException(), isNull);
@@ -146,7 +148,7 @@ void main() {
   testWidgets('long response auto-scrolls to its end', (tester) async {
     final api = ControlledApi();
     final controller = ChatController(api: api);
-    await tester.pumpWidget(MyApp(controller: controller));
+    await pumpChatApp(tester, controller: controller);
     final pending = controller.sendMessage('Informasi produk');
     await tester.pump(const Duration(milliseconds: 400));
     api.responses.single.complete(
@@ -188,7 +190,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
-    await tester.pumpWidget(const MyApp());
+    await pumpChatApp(tester);
     await tester.pump(const Duration(seconds: 1));
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
@@ -199,7 +201,7 @@ void main() {
   ) async {
     final api = ControlledApi();
     final controller = ChatController(api: api);
-    await tester.pumpWidget(MyApp(controller: controller));
+    await pumpChatApp(tester, controller: controller);
     final old = controller.sendMessage('Lama');
     await tester.pump(const Duration(milliseconds: 400));
     controller.newChat();
@@ -225,7 +227,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
     addTearDown(tester.view.resetViewInsets);
-    await tester.pumpWidget(const MyApp());
+    await pumpChatApp(tester);
     await tester.enterText(
       find.byType(TextField),
       'Baris satu\nBaris dua\nBaris tiga\nBaris empat',
@@ -240,7 +242,7 @@ void main() {
   ) async {
     final api = ControlledApi();
     final controller = ChatController(api: api);
-    await tester.pumpWidget(MyApp(controller: controller));
+    await pumpChatApp(tester, controller: controller);
     await tester.tap(find.byType(TextField));
     tester.testTextInput.updateEditingValue(
       const TextEditingValue(
@@ -266,7 +268,7 @@ void main() {
     addTearDown(tester.view.resetViewInsets);
     final api = ControlledApi();
     final controller = ChatController(api: api);
-    await tester.pumpWidget(MyApp(controller: controller));
+    await pumpChatApp(tester, controller: controller);
     final pending = controller.sendMessage('Informasi');
     await tester.pump(const Duration(milliseconds: 400));
     api.responses.last.complete(
@@ -297,7 +299,7 @@ void main() {
       api.responses.last.complete(ChatReply(reply: 'Jawaban $i'));
       await pending;
     }
-    await tester.pumpWidget(MyApp(controller: controller));
+    await pumpChatApp(tester, controller: controller);
     await tester.pump(const Duration(milliseconds: 400));
     expect(find.byType(ChatBubble).evaluate().length, lessThan(30));
     expect(controller.messages, hasLength(100));
@@ -308,7 +310,7 @@ void main() {
   testWidgets('failed message edit button restores the draft', (tester) async {
     final api = ControlledApi();
     final controller = ChatController(api: api);
-    await tester.pumpWidget(MyApp(controller: controller));
+    await pumpChatApp(tester, controller: controller);
     final greeting = controller.sendMessage('Halo');
     await tester.pump(const Duration(milliseconds: 400));
     api.responses.last.complete(const ChatReply(reply: 'Halo kembali'));
@@ -328,6 +330,7 @@ void main() {
     expect(find.text('Halo kembali'), findsOneWidget);
     expect(find.text('Pesan tidak valid'), findsNothing);
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
+    expect(controller.inputFocus.hasFocus, isTrue);
     await tester.pumpWidget(const SizedBox());
   });
   testWidgets('reply arrival preserves manual reading position', (
@@ -340,7 +343,7 @@ void main() {
       api.responses.last.complete(ChatReply(reply: 'Jawaban $i'));
       await pending;
     }
-    await tester.pumpWidget(MyApp(controller: controller));
+    await pumpChatApp(tester, controller: controller);
     await tester.pump(const Duration(milliseconds: 400));
     final pending = controller.sendMessage('Pertanyaan terbaru');
     await tester.pump(const Duration(milliseconds: 400));
@@ -363,7 +366,10 @@ void main() {
     controller.scrollToLatest();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
-    expect(controller.scrollController.offset, 0);
+    expect(
+      controller.scrollController.offset,
+      controller.scrollController.position.maxScrollExtent,
+    );
     expect(find.text('Jawaban terbaru yang panjang.'), findsWidgets);
     await tester.pumpWidget(const SizedBox());
   });

@@ -67,7 +67,7 @@ class ChatController extends GetxController {
     );
     errorMessage = null;
     _refresh();
-    inputFocus.requestFocus();
+    _focusInput();
   }
 
   Future<void> _request() async {
@@ -113,7 +113,7 @@ class ChatController extends GetxController {
         isLoading = false;
         _cancelToken = null;
         _refresh();
-        inputFocus.requestFocus();
+        _focusInput();
       }
     }
   }
@@ -127,7 +127,13 @@ class ChatController extends GetxController {
     errorMessage = null;
     isLoading = false;
     _refresh();
-    inputFocus.requestFocus();
+    _focusInput();
+  }
+
+  void _focusInput() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_closed && canCompose) inputFocus.requestFocus();
+    });
   }
 
   void _refresh() {
@@ -138,6 +144,14 @@ class ChatController extends GetxController {
   void cancelAutoScroll() => _scrollRequest++;
 
   void scrollToLatest({bool onlyIfNearBottom = false}) {
+    // Capture the reading position before new content changes the scroll extent.
+    if (onlyIfNearBottom && scrollController.hasClients) {
+      final position = scrollController.position;
+      final latest = position.axisDirection == AxisDirection.up
+          ? position.minScrollExtent
+          : position.maxScrollExtent;
+      if ((position.pixels - latest).abs() > 80) return;
+    }
     final request = ++_scrollRequest;
     final generation = conversation;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -151,8 +165,6 @@ class ChatController extends GetxController {
       final latest = position.axisDirection == AxisDirection.up
           ? position.minScrollExtent
           : position.maxScrollExtent;
-      // Follow the conversation only while the reader is near the newest reply.
-      if (onlyIfNearBottom && (position.pixels - latest).abs() > 80) return;
 
       void settleAtLatest(Duration _) {
         if (_closed ||

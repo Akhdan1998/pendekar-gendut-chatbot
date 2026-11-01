@@ -43,6 +43,8 @@ class ChatHeader extends StatelessWidget {
                   const Flexible(
                     child: Text(
                       'Pendekar Gendut',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -71,11 +73,15 @@ class ChatHeader extends StatelessWidget {
                   ],
                 ],
               ),
-              const SizedBox(height: 2),
-              const Text(
-                'Pelayan Toko H Haris',
-                style: TextStyle(color: AppColors.muted, fontSize: 12),
-              ),
+              if (!compact) ...[
+                const SizedBox(height: 2),
+                const Text(
+                  'Pelayan Toko H Haris',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: AppColors.muted, fontSize: 12),
+                ),
+              ],
             ],
           ),
         ),

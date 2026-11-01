@@ -129,11 +129,13 @@ class ChatComposer extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            const Padding(
-              padding: EdgeInsets.only(left: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
               child: Text(
                 'Jawaban AI dari data simulasi Toko H Haris.',
-                style: TextStyle(
+                maxLines: compact ? 1 : null,
+                overflow: compact ? TextOverflow.ellipsis : null,
+                style: const TextStyle(
                   color: AppColors.muted,
                   fontSize: 12,
                   height: 1.4,

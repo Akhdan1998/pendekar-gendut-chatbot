@@ -2,7 +2,9 @@ import 'package:ai_chatbot/features/chat/controllers/chat_controller.dart';
 import 'package:ai_chatbot/features/chat/models/chat_message.dart';
 import 'package:ai_chatbot/features/chat/widgets/active_conversation_card.dart';
 import 'package:ai_chatbot/features/chat/widgets/chat_composer.dart';
-import 'package:ai_chatbot/main.dart';
+
+import '../../support/pump_chat_app.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,7 +21,7 @@ void main() {
       api.responses.last.complete(ChatReply(reply: 'Jawaban $i'));
       await request;
     }
-    await tester.pumpWidget(MyApp(controller: controller));
+    await pumpChatApp(tester, controller: controller);
     await tester.pump(const Duration(milliseconds: 400));
     final pending = controller.sendMessage('Pertanyaan berikutnya');
     await tester.pump(const Duration(milliseconds: 400));
@@ -51,7 +53,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
       final api = ControlledApi();
       final controller = ChatController(api: api);
-      await tester.pumpWidget(MyApp(controller: controller));
+      await pumpChatApp(tester, controller: controller);
       final pending = controller.sendMessage('Daftar produk');
       await tester.pump(const Duration(milliseconds: 400));
       api.responses.single.complete(
@@ -76,7 +78,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(controller.scrollController.offset, greaterThan(80));
       controller.scrollController.jumpTo(
-        controller.scrollController.position.maxScrollExtent,
+        controller.scrollController.position.minScrollExtent,
       );
       await tester.pumpAndSettle();
       final firstParagraph = find.text('Awal jawaban');
@@ -85,7 +87,10 @@ void main() {
       controller.scrollToLatest();
       await tester.pump();
       await tester.pumpAndSettle();
-      expect(controller.scrollController.offset, 0);
+      expect(
+        controller.scrollController.offset,
+        controller.scrollController.position.maxScrollExtent,
+      );
       expect(tester.getRect(responseTime).bottom, lessThan(composer.top));
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
@@ -100,7 +105,7 @@ void main() {
         addTearDown(tester.view.resetDevicePixelRatio);
         final api = ControlledApi();
         final controller = ChatController(api: api);
-        await tester.pumpWidget(MyApp(controller: controller));
+        await pumpChatApp(tester, controller: controller);
         Future<void> openSidebar() async {
           if (size.width < 760) {
             await tester.tap(find.byTooltip('Buka menu'));
@@ -142,7 +147,10 @@ void main() {
         expect(card.hasMessages, isTrue);
         await tester.tap(find.text('Kembali ke percakapan'));
         await tester.pumpAndSettle();
-        expect(controller.scrollController.offset, 0);
+        expect(
+          controller.scrollController.offset,
+          controller.scrollController.position.maxScrollExtent,
+        );
         await openSidebar();
         await tester.tap(find.text('Chat Baru').first);
         await tester.pump(const Duration(milliseconds: 400));
@@ -150,7 +158,10 @@ void main() {
         expect(controller.scrollController.hasClients, isFalse);
         final next = controller.sendMessage('Judul sesi kedua');
         await tester.pump(const Duration(milliseconds: 400));
-        expect(controller.scrollController.offset, 0);
+        expect(
+          controller.scrollController.offset,
+          controller.scrollController.position.maxScrollExtent,
+        );
         api.responses.last.complete(
           const ChatReply(reply: 'Jawaban sesi kedua.'),
         );
