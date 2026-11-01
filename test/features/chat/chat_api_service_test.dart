@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 class TestAdapter implements HttpClientAdapter {
   TestAdapter(this.body, {this.statusCode = 200});
-  final Object body;
+  Object body;
   int statusCode;
   RequestOptions? request;
   final requestBodies = <Object?>[];
@@ -236,6 +236,7 @@ void main() {
           ..httpClientAdapter = TestAdapter({
             'success': true,
             'reply': marker,
+            'shopping_context': marker,
           }, statusCode: status),
       );
       try {
@@ -243,6 +244,7 @@ void main() {
           message: 'Halo',
           history: [],
           cancelToken: CancelToken(),
+          shoppingContext: marker,
         );
         if (status == 200) {
           await request;

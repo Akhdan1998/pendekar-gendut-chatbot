@@ -5,8 +5,9 @@ import '../../../core/config/api_config.dart';
 import '../models/chat_message.dart';
 
 class ChatApiException implements Exception {
-  const ChatApiException(this.message);
+  const ChatApiException(this.message, {this.requiresNewConversation = false});
   final String message;
+  final bool requiresNewConversation;
 }
 
 class ChatApiService {
@@ -21,10 +22,17 @@ class ChatApiService {
 
   final Dio _dio;
 
+  static const _shoppingRecovery = ChatApiException(
+    'Daftar belanja tidak dapat dilanjutkan atau sudah kedaluwarsa. '
+    'Pilih Percakapan Baru, lalu sebutkan kembali produk dan anggaran Anda.',
+    requiresNewConversation: true,
+  );
+
   Future<ChatReply> sendMessage({
     required String message,
     required List<ChatMessage> history,
     required CancelToken cancelToken,
+    String? shoppingContext,
   }) async {
     if (kDebugMode) {
       debugPrint('[Chat API] Base URL: ${_dio.options.baseUrl}');
@@ -33,14 +41,22 @@ class ChatApiService {
     try {
       final response = await _dio.post<Object?>(
         '/api/chat',
-        data: {'message': message, 'history': _serializeHistory(history)},
+        data: {
+          'message': message,
+          'history': _serializeHistory(history),
+          'shopping_context': ?shoppingContext,
+        },
         cancelToken: cancelToken,
       );
       if (kDebugMode) {
         debugPrint('[Chat API] URL: ${response.requestOptions.uri}');
         debugPrint('[Chat API] Status code: ${response.statusCode}');
       }
-      return ChatReply.fromJson(response.data);
+      final reply = ChatReply.fromJson(response.data);
+      if (shoppingContext != null && reply.shoppingContext == null) {
+        throw _shoppingRecovery;
+      }
+      return reply;
     } on DioException catch (error) {
       if (kDebugMode) {
         debugPrint('[Chat API] URL: ${error.requestOptions.uri}');
@@ -50,11 +66,15 @@ class ChatApiService {
         debugPrint('[Chat API] Jenis error: ${error.type.name}');
       }
       if (CancelToken.isCancel(error)) rethrow;
+      if (shoppingContext != null && error.response?.statusCode == 400) {
+        throw _shoppingRecovery;
+      }
       throw ChatApiException(_errorMessage(error));
     } on FormatException {
       if (kDebugMode) {
         debugPrint('[Chat API] Format response tidak valid.');
       }
+      if (shoppingContext != null) throw _shoppingRecovery;
       throw const ChatApiException(
         'Jawaban dari layanan belum dapat dibaca. Silakan coba lagi.',
       );

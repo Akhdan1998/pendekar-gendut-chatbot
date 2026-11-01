@@ -9,10 +9,12 @@ class ChatErrorMessage extends StatelessWidget {
     required this.message,
     required this.onRetry,
     required this.onEdit,
+    this.onNewChat,
   });
   final String message;
   final VoidCallback onRetry;
   final VoidCallback onEdit;
+  final VoidCallback? onNewChat;
 
   @override
   Widget build(BuildContext context) => Semantics(
@@ -53,16 +55,24 @@ class ChatErrorMessage extends StatelessWidget {
           Wrap(
             spacing: 8,
             children: [
-              TextButton.icon(
-                onPressed: onRetry,
-                icon: const Icon(Icons.refresh, size: 18),
-                label: const Text(AppStrings.retry),
-              ),
-              TextButton.icon(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined, size: 18),
-                label: const Text('Ubah pesan'),
-              ),
+              if (onNewChat != null)
+                TextButton.icon(
+                  onPressed: onNewChat,
+                  icon: const Icon(Icons.add_comment_outlined, size: 18),
+                  label: const Text(AppStrings.newConversation),
+                )
+              else ...[
+                TextButton.icon(
+                  onPressed: onRetry,
+                  icon: const Icon(Icons.refresh, size: 18),
+                  label: const Text(AppStrings.retry),
+                ),
+                TextButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text('Ubah pesan'),
+                ),
+              ],
             ],
           ),
         ],

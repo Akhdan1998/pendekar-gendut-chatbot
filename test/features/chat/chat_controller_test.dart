@@ -7,7 +7,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class ControlledApi extends ChatApiService {
-  final requests = <({String message, List<ChatMessage> history})>[];
+  final requests =
+      <
+        ({String message, List<ChatMessage> history, String? shoppingContext})
+      >[];
   final responses = <Completer<ChatReply>>[];
 
   @override
@@ -15,8 +18,13 @@ class ControlledApi extends ChatApiService {
     required String message,
     required List<ChatMessage> history,
     required CancelToken cancelToken,
+    String? shoppingContext,
   }) {
-    requests.add((message: message, history: List.of(history)));
+    requests.add((
+      message: message,
+      history: List.of(history),
+      shoppingContext: shoppingContext,
+    ));
     final completer = Completer<ChatReply>();
     responses.add(completer);
     return completer.future;

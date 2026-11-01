@@ -21,6 +21,8 @@ class ChatController extends GetxController {
 
   bool isLoading = false;
   String? errorMessage;
+  String? _shoppingContext;
+  bool requiresNewConversation = false;
   int conversation = 0;
   CancelToken? _cancelToken;
   bool _closed = false;
@@ -45,7 +47,11 @@ class ChatController extends GetxController {
   }
 
   Future<void> retry() async {
-    if (isLoading || errorMessage == null || _messages.isEmpty || _closed) {
+    if (isLoading ||
+        requiresNewConversation ||
+        errorMessage == null ||
+        _messages.isEmpty ||
+        _closed) {
       return;
     }
     _messages[_messages.length - 1] = _messages.last.withStatus(
@@ -55,7 +61,11 @@ class ChatController extends GetxController {
   }
 
   void editFailedMessage() {
-    if (_closed || isLoading || errorMessage == null || _messages.isEmpty) {
+    if (_closed ||
+        isLoading ||
+        requiresNewConversation ||
+        errorMessage == null ||
+        _messages.isEmpty) {
       return;
     }
     final failed = _messages.last;
@@ -88,8 +98,10 @@ class ChatController extends GetxController {
         message: _messages.last.content,
         history: recentHistory,
         cancelToken: token,
+        shoppingContext: _shoppingContext,
       );
       if (_closed || generation != conversation) return;
+      _shoppingContext = reply.shoppingContext;
       _messages[_messages.length - 1] = _messages.last.withStatus(
         MessageStatus.delivered,
       );
@@ -102,6 +114,10 @@ class ChatController extends GetxController {
       );
     } catch (error) {
       if (_closed || generation != conversation || token.isCancelled) return;
+      if (error is ChatApiException && error.requiresNewConversation) {
+        _shoppingContext = null;
+        requiresNewConversation = true;
+      }
       _messages[_messages.length - 1] = _messages.last.withStatus(
         MessageStatus.failed,
       );
@@ -123,6 +139,8 @@ class ChatController extends GetxController {
     _cancelToken?.cancel('Chat baru');
     _cancelToken = null;
     _messages.clear();
+    _shoppingContext = null;
+    requiresNewConversation = false;
     inputController.clear();
     errorMessage = null;
     isLoading = false;

@@ -213,6 +213,9 @@ class _ChatPageState extends State<ChatPage> {
                               message: controller.errorMessage!,
                               onRetry: () => controller.retry(),
                               onEdit: controller.editFailedMessage,
+                              onNewChat: controller.requiresNewConversation
+                                  ? _newChat
+                                  : null,
                             )
                           : const SizedBox.shrink(),
                     ),
