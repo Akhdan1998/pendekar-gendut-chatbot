@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 
 class ChatErrorMessage extends StatelessWidget {
   const ChatErrorMessage({
@@ -38,20 +39,24 @@ class ChatErrorMessage extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  message,
+                  AppStrings.replyError,
                   style: const TextStyle(fontSize: 13, color: AppColors.danger),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
+          Text(
+            message,
+            style: const TextStyle(fontSize: 12, color: AppColors.muted),
+          ),
           Wrap(
             spacing: 8,
             children: [
               TextButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Coba lagi'),
+                label: const Text(AppStrings.retry),
               ),
               TextButton.icon(
                 onPressed: onEdit,

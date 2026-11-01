@@ -45,7 +45,7 @@ void main() {
     expect(tester.takeException(), isNull);
     tester.platformDispatcher.clearTextScaleFactorTestValue();
     await tester.pump();
-    final button = find.widgetWithText(FilledButton, 'Coba AI');
+    final button = find.widgetWithText(FilledButton, 'Coba AI').first;
     Focus.of(
       tester.element(find.descendant(of: button, matching: find.byType(Text))),
     ).requestFocus();
@@ -109,26 +109,32 @@ void main() {
       await tester.pumpWidget(const MyApp());
       await tester.pump(const Duration(seconds: 1));
       expect(find.text('Asisten AI untuk UMKM.'), findsOneWidget);
+      expect(find.text('Pratinjau Chatbot'), findsOneWidget);
+      expect(find.text('Teknologi yang Digunakan'), findsOneWidget);
       expect(
         find.text('Demonstrasi · bukan percakapan langsung'),
         findsOneWidget,
       );
       expect(find.byType(TextField), findsNothing);
       expect(tester.takeException(), isNull);
-      await tester.tap(find.text('Lihat Fitur'));
+      await tester.tap(find.text('Jelajahi Fitur'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       expect(
         find.text('Apa yang Bisa Dilakukan?').hitTestable(),
         findsOneWidget,
       );
-      await tester.scrollUntilVisible(find.text('Mulai Chat'), 400);
-      await tester.tap(find.text('Mulai Chat'));
+      await tester.scrollUntilVisible(
+        find.text('Mulai Percakapan'),
+        400,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Mulai Percakapan'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       expect(find.byType(ChatPage), findsOneWidget);
       expect(tester.takeException(), isNull);
-      Navigator.of(tester.element(find.byType(ChatPage))).pop();
+      await tester.tap(find.byTooltip('Kembali ke Beranda'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
       expect(find.byType(ChatPage), findsNothing);

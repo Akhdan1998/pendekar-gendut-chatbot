@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/l10n/app_strings.dart';
 import '../controllers/chat_controller.dart';
 
 class ChatComposer extends StatelessWidget {
@@ -97,10 +99,10 @@ class ChatComposer extends StatelessWidget {
                         style: const TextStyle(fontSize: 14, height: 1.5),
                         decoration: InputDecoration(
                           hintText: controller.isLoading
-                              ? 'Menunggu jawaban Pendekar Gendut…'
+                              ? AppStrings.loading
                               : controller.errorMessage != null
-                              ? 'Coba lagi atau ubah pesan'
-                              : 'Tulis pertanyaan tentang toko…',
+                              ? 'Coba kembali atau ubah pesan'
+                              : AppStrings.inputHint,
                           hintStyle: const TextStyle(
                             color: AppColors.muted,
                             fontSize: 13,
@@ -110,6 +112,12 @@ class ChatComposer extends StatelessWidget {
                             vertical: compact ? 9 : 13,
                           ),
                           border: InputBorder.none,
+                          focusedBorder: const UnderlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.cyan,
+                              width: 2,
+                            ),
+                          ),
                           isDense: true,
                         ),
                       ),
@@ -149,7 +157,7 @@ class ChatComposer extends StatelessWidget {
   );
 }
 
-class _SendButton extends StatefulWidget {
+class _SendButton extends StatelessWidget {
   const _SendButton({
     required this.enabled,
     required this.onSend,
@@ -160,79 +168,20 @@ class _SendButton extends StatefulWidget {
   final bool compact;
 
   @override
-  State<_SendButton> createState() => _SendButtonState();
-}
-
-class _SendButtonState extends State<_SendButton> {
-  bool _hovered = false;
-  bool _pressed = false;
-
-  @override
   Widget build(BuildContext context) => Tooltip(
-    message: 'Kirim pesan',
-    child: MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedScale(
-        scale: !widget.enabled
-            ? 1
-            : _pressed
-            ? .96
-            : _hovered
-            ? 1.03
-            : 1,
-        duration: MediaQuery.disableAnimationsOf(context)
-            ? Duration.zero
-            : const Duration(milliseconds: 140),
-        child: Semantics(
-          button: true,
-          enabled: widget.enabled,
-          label: 'Kirim pesan',
-          child: Opacity(
-            opacity: widget.enabled ? 1 : .55,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: AppColors.gradient,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: widget.enabled ? widget.onSend : null,
-                  onHighlightChanged: (value) =>
-                      setState(() => _pressed = value),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 14,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (!widget.compact) ...[
-                          const Text(
-                            'Kirim',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(width: 9),
-                        ],
-                        const Icon(
-                          Icons.send_rounded,
-                          size: 17,
-                          color: Colors.white,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+    message: 'Kirim',
+    child: Semantics(
+      label: 'Kirim pesan',
+      button: true,
+      enabled: enabled,
+      child: AppButton(
+        onPressed: enabled ? onSend : null,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!compact) ...[const Text('Kirim'), const SizedBox(width: 8)],
+            const Icon(Icons.send_rounded, size: 18),
+          ],
         ),
       ),
     ),

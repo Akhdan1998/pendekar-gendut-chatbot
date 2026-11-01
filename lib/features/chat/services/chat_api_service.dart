@@ -39,7 +39,6 @@ class ChatApiService {
       if (kDebugMode) {
         debugPrint('[Chat API] URL: ${response.requestOptions.uri}');
         debugPrint('[Chat API] Status code: ${response.statusCode}');
-        debugPrint('[Chat API] Response: ${response.data}');
       }
       return ChatReply.fromJson(response.data);
     } on DioException catch (error) {
@@ -48,16 +47,13 @@ class ChatApiService {
         debugPrint(
           '[Chat API] Status code: ${error.response?.statusCode ?? "Tidak ada respons HTTP"}',
         );
-        debugPrint('[Chat API] Response error: ${error.response?.data}');
         debugPrint('[Chat API] Jenis error: ${error.type.name}');
-        debugPrint('[Chat API] Pesan error: ${error.message}');
-        debugPrint('[Chat API] Penyebab: ${error.error}');
       }
       if (CancelToken.isCancel(error)) rethrow;
       throw ChatApiException(_errorMessage(error));
-    } on FormatException catch (error) {
+    } on FormatException {
       if (kDebugMode) {
-        debugPrint('[Chat API] Format response tidak valid: ${error.message}');
+        debugPrint('[Chat API] Format response tidak valid.');
       }
       throw const ChatApiException(
         'Jawaban dari layanan belum dapat dibaca. Silakan coba lagi.',

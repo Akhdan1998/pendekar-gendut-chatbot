@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 
-class LandingColors {
-  LandingColors._();
-  static const background = Color(0xFF0D1320);
-  static const card = Color(0xFF151B29);
-  static const panel = Color(0xFF202635);
-  static const border = Color(0xFF272E3D);
-  static const blue = Color(0xFF4C8DFF);
-  static const text = Color(0xFFDFE4F6);
-}
+import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/l10n/app_strings.dart';
+import '../../chat/widgets/assistant_avatar.dart';
+import '../../chat/widgets/chat_bubble.dart';
+import '../../chat/models/chat_message.dart';
 
 class LandingButton extends StatelessWidget {
   const LandingButton(
@@ -22,44 +19,8 @@ class LandingButton extends StatelessWidget {
   final bool secondary;
 
   @override
-  Widget build(BuildContext context) => FilledButton(
-    onPressed: onPressed,
-    style: ButtonStyle(
-      minimumSize: const WidgetStatePropertyAll(Size(0, 44)),
-      padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: 24),
-      ),
-      backgroundColor: WidgetStatePropertyAll(
-        secondary ? LandingColors.panel : LandingColors.blue,
-      ),
-      foregroundColor: WidgetStatePropertyAll(
-        secondary ? LandingColors.text : const Color(0xFF061329),
-      ),
-      textStyle: const WidgetStatePropertyAll(
-        TextStyle(
-          fontFamily: 'Roboto',
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      side: WidgetStateProperty.resolveWith(
-        (states) => BorderSide(
-          color: states.contains(WidgetState.focused)
-              ? Colors.white
-              : LandingColors.border,
-          width: states.contains(WidgetState.focused) ? 2 : 1,
-        ),
-      ),
-      overlayColor: WidgetStateProperty.resolveWith(
-        (states) =>
-            states.contains(WidgetState.hovered) ||
-                states.contains(WidgetState.focused)
-            ? Colors.white.withValues(alpha: .16)
-            : null,
-      ),
-    ),
-    child: Text(label),
-  );
+  Widget build(BuildContext context) =>
+      AppButton(onPressed: onPressed, secondary: secondary, child: Text(label));
 }
 
 class LandingLogo extends StatelessWidget {
@@ -70,27 +31,14 @@ class LandingLogo extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Container(
-        width: small ? 22 : 28,
-        height: small ? 22 : 28,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A2D4D),
-          shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFF506A99)),
-        ),
-        child: Icon(
-          Icons.smart_toy_outlined,
-          size: small ? 13 : 16,
-          color: const Color(0xFFB9CEFF),
-        ),
-      ),
+      AssistantAvatar(size: small ? 28 : 36),
       SizedBox(width: small ? 8 : 10),
       Flexible(
         child: Text(
-          'Pendekar Gendut AI',
+          AppStrings.brand,
           style: TextStyle(
-            fontSize: small ? 11 : 14,
-            fontWeight: FontWeight.w500,
+            fontSize: small ? 13 : 14,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -113,9 +61,9 @@ class LandingFeatureCard extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(24),
     decoration: BoxDecoration(
-      color: LandingColors.card,
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: LandingColors.border),
+      color: AppColors.panel,
+      borderRadius: BorderRadius.circular(17),
+      border: Border.all(color: AppColors.border),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,19 +72,26 @@ class LandingFeatureCard extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: const Color(0xFF222C40),
+            color: AppColors.sidebar,
             borderRadius: BorderRadius.circular(9),
-            border: Border.all(color: const Color(0xFF3B4965)),
+            border: Border.all(color: AppColors.border),
           ),
-          child: Icon(icon, size: 19, color: const Color(0xFFB9CEFF)),
+          child: Icon(icon, size: 19, color: AppColors.purple),
         ),
         const SizedBox(height: 18),
         Text(
           title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
-        Text(description, style: const TextStyle(fontSize: 12, height: 1.55)),
+        Text(
+          description,
+          style: const TextStyle(
+            fontSize: 14,
+            height: 1.55,
+            color: AppColors.muted,
+          ),
+        ),
       ],
     ),
   );
@@ -150,130 +105,68 @@ class LandingChatPreview extends StatelessWidget {
   Widget build(BuildContext context) => Container(
     clipBehavior: Clip.antiAlias,
     decoration: BoxDecoration(
-      color: LandingColors.background,
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(color: LandingColors.border),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: .16),
-          blurRadius: 32,
-          offset: const Offset(0, 20),
-        ),
-      ],
+      color: AppColors.surface,
+      borderRadius: BorderRadius.circular(17),
+      border: Border.all(color: AppColors.border),
     ),
     child: Column(
       children: [
         Container(
           width: double.infinity,
-          color: LandingColors.panel,
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+          color: AppColors.sidebar,
+          padding: const EdgeInsets.all(16),
           child: const Wrap(
             alignment: WrapAlignment.spaceBetween,
             crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 16,
+            runSpacing: 12,
             children: [
               LandingLogo(small: true),
               Text(
-                'Contoh chat',
-                style: TextStyle(fontSize: 10, color: Color(0xFF81E5B0)),
+                'Pratinjau Chatbot',
+                style: TextStyle(color: AppColors.cyan, fontSize: 13),
               ),
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1B2C4C),
-                  border: Border.all(color: const Color(0xFF506A99)),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    topRight: Radius.circular(15),
-                    bottomLeft: Radius.circular(15),
+        Semantics(
+          label: 'Contoh percakapan statis. Anda: Apakah bisa membayar dengan QRIS? Pendekar Gendut: Bisa. Dalam simulasi Toko H Haris, pembayaran tersedia melalui tunai, transfer bank, dan QRIS.',
+          excludeSemantics: true,
+          child: const Padding(
+            padding: EdgeInsets.fromLTRB(16, 24, 16, 0),
+            child: Column(
+              children: [
+                ChatBubble(
+                  message: ChatMessage(
+                    role: ChatRole.user,
+                    content: 'Apakah bisa membayar dengan QRIS?',
                   ),
                 ),
-                child: const Text(
-                  'Apa yang bisa saya tanyakan di sini?',
-                  style: TextStyle(fontSize: 11),
+                ChatBubble(
+                  message: ChatMessage(
+                    role: ChatRole.assistant,
+                    content: 'Bisa. Dalam simulasi Toko H Haris, pembayaran tersedia melalui tunai, transfer bank, dan QRIS.',
+                  ),
                 ),
-              ),
-              const SizedBox(height: 18),
-              const Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 12,
-                    backgroundColor: LandingColors.panel,
-                    child: Icon(
-                      Icons.smart_toy_outlined,
-                      size: 14,
-                      color: Color(0xFFB9CEFF),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Flexible(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: Color(0xFF232B3A),
-                        borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(15),
-                          bottomLeft: Radius.circular(15),
-                          bottomRight: Radius.circular(15),
-                        ),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Text(
-                          'Halo! Saya Pendekar Gendut. Saya bisa membantu mencari informasi produk, harga, dan layanan Toko H Haris.',
-                          style: TextStyle(fontSize: 11, height: 1.6),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         Container(
           width: double.infinity,
-          color: LandingColors.panel,
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-          child: Row(
+          color: AppColors.sidebar,
+          padding: const EdgeInsets.all(16),
+          child: Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              const Expanded(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: Color(0xFF070F1B),
-                    borderRadius: BorderRadius.all(Radius.circular(9)),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(12),
-                    child: Text(
-                      'Contoh tampilan chat · coba AI untuk bertanya',
-                      style: TextStyle(fontSize: 11, color: Color(0xFFABB4C8)),
-                    ),
-                  ),
-                ),
+              const Text(
+                'Contoh percakapan statis, bukan jawaban AI langsung.',
+                style: TextStyle(fontSize: 12, color: AppColors.muted),
               ),
-              const SizedBox(width: 8),
-              IconButton.filled(
-                onPressed: onStartChat,
-                tooltip: 'Buka chatbot untuk mengirim pertanyaan',
-                style: IconButton.styleFrom(
-                  backgroundColor: LandingColors.blue,
-                  foregroundColor: const Color(0xFF061329),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(9),
-                  ),
-                ),
-                icon: const Icon(Icons.send_outlined, size: 18),
-              ),
+              LandingButton('Coba AI', onPressed: onStartChat),
             ],
           ),
         ),

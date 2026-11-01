@@ -152,7 +152,7 @@ void main() {
           controller.scrollController.position.maxScrollExtent,
         );
         await openSidebar();
-        await tester.tap(find.text('Chat Baru').first);
+        await tester.tap(find.text('Percakapan Baru').first);
         await tester.pump(const Duration(milliseconds: 400));
         expect(controller.messages, isEmpty);
         expect(controller.scrollController.hasClients, isFalse);

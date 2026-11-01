@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 
 class TypingIndicator extends StatefulWidget {
   const TypingIndicator({super.key});
@@ -36,7 +37,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
 
   @override
   Widget build(BuildContext context) => Semantics(
-    label: 'Pendekar Gendut sedang menyiapkan jawaban',
+    label: AppStrings.loading,
     liveRegion: true,
     child: Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -72,7 +73,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
           const SizedBox(width: 8),
           const Flexible(
             child: Text(
-              'Pendekar Gendut sedang menyiapkan jawaban…',
+              AppStrings.loading,
               style: TextStyle(color: AppColors.muted, fontSize: 12),
             ),
           ),

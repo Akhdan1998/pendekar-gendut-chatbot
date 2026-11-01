@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 import 'assistant_avatar.dart';
 
 class ChatHeader extends StatelessWidget {
@@ -26,6 +27,11 @@ class ChatHeader extends StatelessWidget {
     ),
     child: Row(
       children: [
+        IconButton(
+          tooltip: AppStrings.home,
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_rounded, size: 22),
+        ),
         if (onMenu != null)
           IconButton(
             tooltip: 'Buka menu',
@@ -66,7 +72,7 @@ class ChatHeader extends StatelessWidget {
                         ),
                       ),
                       child: const Text(
-                        'Pelayan AI',
+                        AppStrings.assistant,
                         style: TextStyle(color: AppColors.cyan, fontSize: 12),
                       ),
                     ),
@@ -76,7 +82,7 @@ class ChatHeader extends StatelessWidget {
               if (!compact) ...[
                 const SizedBox(height: 2),
                 const Text(
-                  'Pelayan Toko H Haris',
+                  'Asisten Toko H Haris',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(color: AppColors.muted, fontSize: 12),
@@ -87,7 +93,7 @@ class ChatHeader extends StatelessWidget {
         ),
         if (onNewChat != null)
           IconButton(
-            tooltip: 'Chat Baru',
+            tooltip: AppStrings.newConversation,
             onPressed: onNewChat,
             icon: const Icon(Icons.add_comment_outlined, size: 21),
           ),

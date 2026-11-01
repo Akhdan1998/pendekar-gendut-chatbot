@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 import 'assistant_avatar.dart';
 import 'entrance.dart';
 import 'suggestion_card.dart';
@@ -84,13 +85,13 @@ class WelcomeSection extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    '•  Pelayan AI Toko H Haris',
+                    '•  ${AppStrings.assistant} Toko H Haris',
                     style: TextStyle(color: AppColors.purple, fontSize: 12),
                   ),
                 ),
                 SizedBox(height: mobile ? 10 : 16),
                 Text(
-                  'Halo! Saya Pendekar Gendut, pelayan virtual Toko H Haris. Ada yang bisa saya bantu?',
+                  'Halo! Saya Pendekar Gendut, asisten virtual Toko H Haris. Ada yang bisa saya bantu?',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: mobile

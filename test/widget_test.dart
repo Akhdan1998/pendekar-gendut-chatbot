@@ -17,12 +17,13 @@ void main() {
   for (final size in [
     const Size(1440, 900),
     const Size(900, 800),
+    const Size(768, 900),
     const Size(390, 844),
     const Size(320, 568),
     const Size(844, 390),
   ]) {
     testWidgets(
-      'welcome fits viewport $size and menu keeps Chat Baru accessible',
+      'welcome fits viewport $size and menu keeps Percakapan Baru accessible',
       (tester) async {
         tester.view.physicalSize = size;
         tester.view.devicePixelRatio = 1;
@@ -34,7 +35,7 @@ void main() {
         await tester.pump(const Duration(seconds: 1));
         expect(
           find.text(
-            'Halo! Saya Pendekar Gendut, pelayan virtual Toko H Haris. Ada yang bisa saya bantu?',
+            'Halo! Saya Pendekar Gendut, asisten virtual Toko H Haris. Ada yang bisa saya bantu?',
           ),
           findsOneWidget,
         );
@@ -46,7 +47,10 @@ void main() {
         final pending = controller.sendMessage('Harga beras?');
         await tester.pump(const Duration(milliseconds: 400));
         expect(
-          find.text('Pendekar Gendut sedang menyiapkan jawaban…'),
+          find.descendant(
+            of: find.byType(TypingIndicator),
+            matching: find.text('Sedang menyiapkan jawaban...'),
+          ),
           findsOneWidget,
         );
         expect(tester.takeException(), isNull);
@@ -62,7 +66,7 @@ void main() {
           await tester.tap(find.byTooltip('Buka menu'));
           await tester.pump(const Duration(milliseconds: 400));
         }
-        expect(find.text('Chat Baru'), findsWidgets);
+        expect(find.text('Percakapan Baru'), findsWidgets);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
       },
@@ -88,8 +92,8 @@ void main() {
         const ChatApiException('Tidak dapat terhubung.'),
       );
       await tester.pump();
-      expect(find.text('Tidak dapat terhubung.'), findsOneWidget);
-      await tester.tap(find.text('Coba lagi'));
+      expect(find.textContaining('Tidak dapat terhubung.'), findsOneWidget);
+      await tester.tap(find.text('Coba Lagi'));
       await tester.pump();
       api.responses.last.complete(
         const ChatReply(reply: 'Jawaban uji dari layanan.'),
@@ -97,12 +101,12 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.text('Jawaban uji dari layanan.'), findsOneWidget);
-      await tester.tap(find.text('Chat Baru'));
+      await tester.tap(find.text('Percakapan Baru'));
       await tester.pump(const Duration(milliseconds: 400));
       expect(controller.messages, isEmpty);
       expect(
         find.text(
-          'Halo! Saya Pendekar Gendut, pelayan virtual Toko H Haris. Ada yang bisa saya bantu?',
+          'Halo! Saya Pendekar Gendut, asisten virtual Toko H Haris. Ada yang bisa saya bantu?',
         ),
         findsOneWidget,
       );
@@ -323,12 +327,14 @@ void main() {
     );
     await pending;
     await tester.pump();
+    await tester.ensureVisible(find.text('Ubah pesan'));
+    await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(find.text('Ubah pesan'));
     await tester.pump();
     expect(controller.inputController.text, 'Pesan keliru');
     expect(controller.messages, hasLength(2));
     expect(find.text('Halo kembali'), findsOneWidget);
-    expect(find.text('Pesan tidak valid'), findsNothing);
+    expect(find.textContaining('Pesan tidak valid'), findsNothing);
     expect(tester.widget<TextField>(find.byType(TextField)).enabled, isTrue);
     expect(controller.inputFocus.hasFocus, isTrue);
     await tester.pumpWidget(const SizedBox());

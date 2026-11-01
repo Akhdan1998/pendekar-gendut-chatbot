@@ -1,11 +1,11 @@
 {
-  "name": "UMKM AI Chatbot",
-  "short_name": "UMKM AI Chatbot",
+  "name": "Pendekar Gendut AI",
+  "short_name": "Pendekar Gendut AI",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#090E18",
   "theme_color": "#090E18",
-  "description": "Pendekar Gendut, pelayan AI untuk informasi simulasi Toko H Haris.",
+  "description": "Pendekar Gendut, asisten AI untuk informasi simulasi Toko H Haris.",
   "orientation": "any",
   "prefer_related_applications": false,
   "icons": [

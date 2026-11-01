@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/l10n/app_strings.dart';
 import 'active_conversation_card.dart';
+import 'assistant_avatar.dart';
 import 'store_information_card.dart';
 
 class ChatSidebar extends StatelessWidget {
@@ -34,33 +36,14 @@ class ChatSidebar extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        width: 43,
-                        height: 43,
-                        padding: const EdgeInsets.all(1.5),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.gradient,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.sidebar,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.brightness_1_rounded,
-                            color: AppColors.cyan,
-                            size: 20,
-                          ),
-                        ),
-                      ),
+                      const AssistantAvatar(size: 43),
                       const SizedBox(width: 12),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'UMKM AI Chatbot',
+                              AppStrings.brand,
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
@@ -101,12 +84,12 @@ class ChatSidebar extends StatelessWidget {
                         size: 19,
                         color: AppColors.purple,
                       ),
-                      label: const Text('Chat Baru'),
+                      label: const Text(AppStrings.newConversation),
                     ),
                   ),
                   const SizedBox(height: 30),
                   const Text(
-                    'PERCAKAPAN SAAT INI',
+                    'Percakapan Saat Ini',
                     style: TextStyle(
                       color: AppColors.muted,
                       fontSize: 12,

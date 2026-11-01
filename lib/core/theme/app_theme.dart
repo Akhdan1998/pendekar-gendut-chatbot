@@ -26,8 +26,47 @@ class AppTheme {
     tooltipTheme: const TooltipThemeData(
       waitDuration: Duration(milliseconds: 500),
     ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: ButtonStyle(
+        minimumSize: const WidgetStatePropertyAll(Size(48, 48)),
+        padding: const WidgetStatePropertyAll(
+          EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        ),
+        foregroundColor: const WidgetStatePropertyAll(AppColors.text),
+        textStyle: const WidgetStatePropertyAll(
+          TextStyle(
+            fontFamily: 'Roboto',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        ),
+        side: WidgetStateProperty.resolveWith(
+          (states) => BorderSide(
+            color: states.contains(WidgetState.focused)
+                ? AppColors.text
+                : AppColors.border,
+            width: states.contains(WidgetState.focused) ? 2 : 1,
+          ),
+        ),
+        overlayColor: WidgetStatePropertyAll(
+          Colors.white.withValues(alpha: .08),
+        ),
+      ),
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        minimumSize: const Size(48, 48),
+        focusColor: AppColors.purple.withValues(alpha: .25),
+      ),
+    ),
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(foregroundColor: AppColors.purple),
+      style: TextButton.styleFrom(
+        foregroundColor: AppColors.purple,
+        minimumSize: const Size(48, 48),
+      ),
     ),
     scrollbarTheme: ScrollbarThemeData(
       thumbColor: WidgetStateProperty.all(AppColors.border),

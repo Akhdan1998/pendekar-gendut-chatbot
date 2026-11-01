@@ -6,6 +6,7 @@ import 'package:ai_chatbot/features/chat/controllers/chat_controller.dart';
 import 'package:ai_chatbot/features/chat/models/chat_message.dart';
 import 'package:ai_chatbot/features/chat/services/chat_api_service.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter_test/flutter_test.dart';
 
 class TestAdapter implements HttpClientAdapter {
@@ -199,7 +200,7 @@ void main() {
   test(
     'HTTP errors and unexpected payloads become safe Indonesian errors',
     () async {
-      for (final status in [200, 422, 502]) {
+      for (final status in [200, 422, 429, 500, 502]) {
         final dio = Dio()
           ..httpClientAdapter = TestAdapter({
             'secret': 'sensitive internal detail',
@@ -223,4 +224,76 @@ void main() {
       }
     },
   );
+  test('debug logs exclude successful and failed response payloads', () async {
+    const marker = 'DUMMY_PRIVATE_PAYLOAD';
+    final logs = <String>[];
+    final originalDebugPrint = debugPrint;
+    debugPrint = (String? message, {int? wrapWidth}) => logs.add(message ?? '');
+    addTearDown(() => debugPrint = originalDebugPrint);
+    for (final status in [200, 502]) {
+      final service = ChatApiService(
+        dio: Dio()
+          ..httpClientAdapter = TestAdapter({
+            'success': true,
+            'reply': marker,
+          }, statusCode: status),
+      );
+      try {
+        final request = service.sendMessage(
+          message: 'Halo',
+          history: [],
+          cancelToken: CancelToken(),
+        );
+        if (status == 200) {
+          await request;
+        } else {
+          await expectLater(request, throwsA(isA<ChatApiException>()));
+        }
+      } finally {
+        service.close();
+      }
+    }
+    expect(logs.join('\n'), isNot(contains(marker)));
+    expect(logs.join('\n'), contains('Status code: 502'));
+  });
+
+  test('all client timeout types return safe recovery guidance', () async {
+    for (final type in [
+      DioExceptionType.connectionTimeout,
+      DioExceptionType.sendTimeout,
+      DioExceptionType.receiveTimeout,
+    ]) {
+      final dio = Dio()
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onRequest: (options, handler) => handler.reject(
+              DioException(
+                requestOptions: options,
+                type: type,
+                error: 'DUMMY_PRIVATE_PAYLOAD',
+              ),
+            ),
+          ),
+        );
+      final service = ChatApiService(dio: dio);
+      try {
+        await expectLater(
+          service.sendMessage(
+            message: 'Halo',
+            history: [],
+            cancelToken: CancelToken(),
+          ),
+          throwsA(
+            isA<ChatApiException>().having(
+              (error) => error.message,
+              'safe timeout guidance',
+              'Layanan membutuhkan waktu lebih lama. Silakan coba lagi.',
+            ),
+          ),
+        );
+      } finally {
+        service.close();
+      }
+    }
+  });
 }

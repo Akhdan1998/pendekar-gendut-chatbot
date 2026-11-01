@@ -66,8 +66,8 @@ Push ke `main` men-deploy channel live secara berurutan. Pull request dari repos
 - Empat kartu saran mengirim pertanyaan ke API yang sama dengan composer.
 - Enter mengirim pesan; Shift+Enter membuat baris baru pada desktop. Enter saat komposisi IME masih aktif tidak mengirim pesan.
 - Saat permintaan berlangsung, input dinonaktifkan untuk mencegah kiriman ganda.
-- Kegagalan mempertahankan pesan dan menampilkan **Coba lagi**. Retry mengirim ulang pertanyaan yang sama tanpa menambah bubble pengguna. Pilih **Ubah pesan** untuk memperbaiki pertanyaan tanpa menghapus percakapan sebelumnya, atau **Chat Baru** untuk mengosongkan sesi.
-- **Chat Baru** membatalkan permintaan yang sedang berjalan dan menghapus pesan, error, serta draf. Jawaban dari sesi sebelumnya diabaikan.
+- Kegagalan mempertahankan pesan dan menampilkan **Coba Lagi**. Retry mengirim ulang pertanyaan yang sama tanpa menambah bubble pengguna. Pilih **Ubah pesan** untuk memperbaiki pertanyaan tanpa menghapus percakapan sebelumnya, atau **Percakapan Baru** untuk mengosongkan sesi.
+- **Percakapan Baru** membatalkan permintaan yang sedang berjalan dan menghapus pesan, error, serta draf. Jawaban dari sesi sebelumnya diabaikan.
 - Percakapan hanya berada di memori dan hilang saat halaman dimuat ulang. Daftar pesan dirender secara lazy: hanya bubble di sekitar layar yang dipasang, dan pesan terbaru tetap menempel di bawah saat keyboard muncul.
 - Sidebar berubah menjadi drawer di bawah lebar 760 piksel. Konten sambutan dapat digulir pada layar pendek; composer tetap di atas keyboard.
 - Animasi menghormati preferensi pengurangan gerakan. Font Roboto dibundel beserta lisensinya.
